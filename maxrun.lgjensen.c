@@ -40,6 +40,9 @@ int main(int argc, char *argv[]) {
         printf("%c", buffer[i]);
     }
     // here’s where you’ll create the threads that do the actual searching
+    pthread_create();
+    struct SearchInfo threadArray[NUM_THREADS];
+
     return 0;
 }
 
