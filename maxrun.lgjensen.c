@@ -1,5 +1,6 @@
 //-------------------------------
 // Lars Jensen CS201 Spring 2021
+// Aidan Brown
 //-------------------------------
 
 #include <pthread.h>
