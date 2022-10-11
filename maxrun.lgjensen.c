@@ -14,6 +14,15 @@
 #define LINELEN 256
 char buffer[BUFLEN];
 
+//thread stuff
+#define NUM_THREADS 4
+typedef struct {
+    int startIndex; // start index in buffer[] at which to begin searching
+    int endIndex; // end index
+    int maxRunLength; // result: the longest run found of any character in buffer[],
+// between startIndex and endIndex (inclusive)
+    char maxRunChar; // result: the character in the longest run
+} SearchInfo;
 
 int readFile(char *filename, int *numChars);
 
@@ -64,6 +73,7 @@ int readFile(char *filename, int *numChars){
         bufferPos = strlen(buffer);
         chp = fgets(line, LINELEN, fp);
     } // while not at end of file
+
 
     return 0;
 }
