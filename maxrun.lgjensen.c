@@ -40,8 +40,22 @@ int main(int argc, char *argv[]) {
         printf("%c", buffer[i]);
     }
     // here’s where you’ll create the threads that do the actual searching
-    pthread_create();
-    struct SearchInfo threadArray[NUM_THREADS];
+    pthread_t tid[NUM_THREADS];
+    SearchInfo threadArray[NUM_THREADS];
+    int maxVal;
+    int i, j, idx, elementsPerThread;
+    SearchInfo dataOne;   // holds data we want to give to child thread #1
+    SearchInfo dataTwo;   // holds data we want to give to child thread #2
+    pthread_t tidOne;    // thread identifier for child thread #1
+    pthread_t tidTwo;
+    // set up bounds for the threads
+    dataOne.startIndex = 0;
+    dataOne.endIndex = NUM_ELEMENTS/2;
+
+    dataTwo.startIndex = NUM_ELEMENTS/2 + 1;
+    dataTwo.endIndex = NUM_ELEMENTS-1;
+
+
 
     return 0;
 }
