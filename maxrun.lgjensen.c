@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < len; ++i){
         printf("%c", buffer[i]);
     }
+
     // here’s where you’ll create the threads that do the actual searching
     pthread_t tid[NUM_THREADS];
     SearchInfo threadArray[NUM_THREADS];
@@ -55,6 +56,9 @@ int main(int argc, char *argv[]) {
     dataTwo.startIndex = NUM_ELEMENTS/2 + 1;
     dataTwo.endIndex = NUM_ELEMENTS-1;
 
+    // create child thread #1
+    pthread_create(&tidOne, NULL, readFile(argv[1], &numChars), &dataOne); // create child thread #2
+    pthread_create(&tidTwo, NULL, readFile, &dataTwo);
 
 
     return 0;
