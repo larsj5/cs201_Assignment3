@@ -26,6 +26,8 @@ typedef struct {
 
 int readFile(char *filename, int *numChars);
 
+void *searchFunction(void *param);
+
 int main(int argc, char *argv[]) {
     int rc, numChars;
     if (argc < 2) {
@@ -35,31 +37,44 @@ int main(int argc, char *argv[]) {
     rc = readFile(argv[1], &numChars);
     if (rc != 0)
         return 8;
-    int len = strlen(buffer);
-    for (int i = 0; i < len; ++i){
-        printf("%c", buffer[i]);
-    }
 
-    // here’s where you’ll create the threads that do the actual searching
-    pthread_t tid[NUM_THREADS];
-    SearchInfo threadArray[NUM_THREADS];
+    SearchInfo data[NUM_THREADS];   // holds data we want to give to child thread
+    pthread_t tid[NUM_THREADS];    // thread identifier
     int maxVal;
     int i, j, idx, elementsPerThread;
-    SearchInfo dataOne;   // holds data we want to give to child thread #1
-    SearchInfo dataTwo;   // holds data we want to give to child thread #2
-    pthread_t tidOne;    // thread identifier for child thread #1
-    pthread_t tidTwo;
-    // set up bounds for the threads
-    dataOne.startIndex = 0;
-    dataOne.endIndex = NUM_ELEMENTS/2;
 
-    dataTwo.startIndex = NUM_ELEMENTS/2 + 1;
-    dataTwo.endIndex = NUM_ELEMENTS-1;
+    idx = 0;
+    elementsPerThread = NUM_ELEMENTS / NUM_THREADS;
+    for (j=0; j<NUM_THREADS-1; ++j) {
+        data[j].startIndex = idx;
+        data[j].endIndex = idx + elementsPerThread - 1;
+        idx = idx + elementsPerThread;
+    }
 
-    // create child thread #1
-    pthread_create(&tidOne, NULL, readFile(argv[1], &numChars), &dataOne); // create child thread #2
-    pthread_create(&tidTwo, NULL, readFile, &dataTwo);
+    // yes, I wish there were a min() function in C
+    data[j].startIndex = idx;
+    if (data[NUM_THREADS-1].startIndex < NUM_ELEMENTS - 1)
+        data[NUM_THREADS-1].endIndex = NUM_ELEMENTS - 1;
 
+    // create and start the threads
+    for (i=0; i<NUM_THREADS; ++i) {
+        // create and start a child thread
+        pthread_create(&tid[i], NULL, searchFunction, &data[i]);
+    }
+
+    // wait for the child threads to terminate
+    for (i=0; i<NUM_THREADS; ++i) {
+        pthread_join(tid[i], NULL);
+    }
+
+    // gather data from the individual results
+    maxVal = data[0].maxRunLength;
+    for (i=0; i<NUM_THREADS; ++i) {
+        if (data[i].maxRunLength > maxVal)
+            maxVal = data[i].maxRunLength;
+    }
+
+    printf("maximum value over the whole array is %d\n", maxVal);
 
     return 0;
 }
@@ -97,6 +112,30 @@ int readFile(char *filename, int *numChars){
 
 
     return 0;
+}
+
+//-----------------------------------------------------------------
+// This is the function that computers the max over a range of the
+// global array A[]. The SumStruct passed through param tells this
+// function over which values to do the max.
+
+void *searchFunction(void *param) {
+    SearchInfo *data;
+    int i, maxVal;
+
+    data = (SearchInfo *) param;
+
+    printf("(R) I am runner; will do max run of digitsfor the range %d to %d\n",
+           data->startIndex, data->endIndex);
+
+    //here is where we need to find the longest run of digits, going 10 indices
+    //over to ensure there isn't one at the end of one of the thread's alloted blocks
+
+    data->maxRunLength = maxVal;
+
+    printf("(R) max is %d\n", data->maxRunLength);
+
+    pthread_exit(NULL);
 }
 
 
