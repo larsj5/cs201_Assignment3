@@ -131,10 +131,11 @@ void *searchFunction(void *param) {
     maxVal = buffer[data->startIndex];
     //here is where we need to find the longest run of digits, going 10 indices
     //over to ensure there isn't one at the end of one of the thread's alloted blocks
-    //need to pad by 10!
+    //need to pad by 10
     for(i = data->startIndex; i<=data->endIndex; ++i){
-        if (buffer[i]>maxVal){
-            maxVal = buffer[i];
+        //need to make sure the thread looks ahead 10, in case of overlap
+        if (buffer[i+10]>maxVal){
+            maxVal = buffer[i+10];
         }
     }
 
