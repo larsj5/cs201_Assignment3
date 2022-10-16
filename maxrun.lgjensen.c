@@ -128,8 +128,15 @@ void *searchFunction(void *param) {
     printf("(R) I am runner; will do max run of digitsfor the range %d to %d\n",
            data->startIndex, data->endIndex);
 
+    maxVal = buffer[data->startIndex];
     //here is where we need to find the longest run of digits, going 10 indices
     //over to ensure there isn't one at the end of one of the thread's alloted blocks
+    //need to pad by 10!
+    for(i = data->startIndex; i<=data->endIndex; ++i){
+        if (buffer[i]>maxVal){
+            maxVal = buffer[i];
+        }
+    }
 
     data->maxRunLength = maxVal;
 
