@@ -23,13 +23,17 @@ typedef struct {
     char maxRunChar;  // result: the character in the longest run
 } SearchInfo;
 
+//readfile
 int readFile(char *filename, int *numChars);
 
+//search function
 void *searchFunction(void *param);
 
 int main(int argc, char *argv[]) {
+    //declare rc and num of chars
     int rc, numChars;
-    if (argc < 2) {
+
+    if (argc < 2) { //require filename for less than 2 arg
         printf("ERROR: need a filename\n");
         return 8;
     }
@@ -37,6 +41,7 @@ int main(int argc, char *argv[]) {
     if (rc != 0)
         return 8;
 
+    //------thread creation--------//
     SearchInfo data[NUM_THREADS];   // holds data we want to give to child thread
     pthread_t tid[NUM_THREADS];    // thread identifier
     int maxVal;
@@ -45,13 +50,13 @@ int main(int argc, char *argv[]) {
 
     idx = 0;
     elementsPerThread = NUM_ELEMENTS / NUM_THREADS;
-    for (j=0; j<NUM_THREADS-1; ++j) {
-        data[j].startIndex = idx;
+    for (j=0; j<NUM_THREADS-1; ++j) {  //loop through indexes
+        data[j].startIndex = idx;  //start & end index
         data[j].endIndex = idx + elementsPerThread - 1;
         idx = idx + elementsPerThread;
     }
 
-    // yes, I wish there were a min() function in C
+    // minimum thread count
     data[j].startIndex = idx;
     if (data[NUM_THREADS-1].startIndex < NUM_ELEMENTS - 1)
         data[NUM_THREADS-1].endIndex = NUM_ELEMENTS - 1;
@@ -84,28 +89,35 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+//reads a file and stashes characters
+//used for the search function to find repeating run
 int readFile(char *filename, int *numChars){
+
+    //open the file, make sure it exists
     FILE *fp = fopen(filename, "r"); // filename is the char* passed to your readFile() function
     if (fp == NULL) {
         printf("ERROR: cannot open file '%s'\n", filename);
         return 1;
     }
+
+    //declare iterators/line
     char line[LINELEN];
     int i = 0;
     int len = 0;
-    int bufferPos = 0;
+    int bufferPos = 0;  //buffer position
     char *chp;
     // now you can read from the file
-    chp = fgets(line, LINELEN, fp);
-    if (chp == NULL) {
+    chp = fgets(line, LINELEN, fp); //fgets to read line
+    if (chp == NULL) { //cannot be null
         printf("file is empty\n");
         fclose(fp);
         return 8;
     }
-    int j = 0;
+
+    //while not at the end of file
     while (chp != NULL) {
-        len = strlen(line);
-        if (line[len-1] == '\n')
+        len = strlen(line);  //length of the chars
+        if (line[len-1] == '\n') //if for new line
             len = len - 1;
         for (i=0; i<len; ++i) {
             // append the contents of the line[] buffer to the global buffer
@@ -113,17 +125,12 @@ int readFile(char *filename, int *numChars){
         }
         bufferPos = strlen(buffer);
         chp = fgets(line, LINELEN, fp);
-    } // while not at end of file
-
-
+    }
     return 0;
 }
 
-//-----------------------------------------------------------------
-// This is the function that computers the max over a range of the
-// global array A[]. The SumStruct passed through param tells this
-// function over which values to do the max.
-
+//search function, looks through file to find the longest consecutive string
+//of repeating characters (numbers of pi)
 void *searchFunction(void *param) {
     //convert parameter into search info struct
     SearchInfo *data;
