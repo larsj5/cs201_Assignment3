@@ -121,25 +121,32 @@ int readFile(char *filename, int *numChars){
 
 void *searchFunction(void *param) {
     SearchInfo *data;
-    int i, maxVal;
 
     data = (SearchInfo *) param;
 
     printf("(R) I am runner; will do max run of digitsfor the range %d to %d\n",
            data->startIndex, data->endIndex);
 
-    maxVal = buffer[data->startIndex];
     //here is where we need to find the longest run of digits, going 10 indices
     //over to ensure there isn't one at the end of one of the thread's alloted blocks
     //need to pad by 10
-    for(i = data->startIndex; i<=data->endIndex; ++i){
-        //need to make sure the thread looks ahead 10, in case of overlap
-        if (buffer[i+10]>maxVal){
-            maxVal = buffer[i+10];
+    //TODO need to account for padding of 10, otherwise it should work
+    int* counter = (int *)malloc(sizeof(int)*data->endIndex);
+    // initialize
+    for (int i = 0; i < data->endIndex; ++i) {
+        counter[i] = 0;
+    }
+    int max = 0;
+    for (int i = 0; i < data->endIndex+10; ++i) { //maybe +10 here?
+        ++counter[buffer[i]];
+        if(max < counter[buffer[i]]) {
+            max = counter[buffer[i]];
+            data->maxRunChar = buffer[i];
         }
     }
-
-    data->maxRunLength = maxVal;
+    free(counter);
+    //max is the longest consecutive string of same number
+    data->maxRunLength = max;
 
     printf("(R) max is %d\n", data->maxRunLength);
 
