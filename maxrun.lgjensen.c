@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     pthread_t tid[NUM_THREADS];    // thread identifier
     int maxVal;
     char maxChar;
+    int maxI;
     int i, j, idx, elementsPerThread;
 
     idx = 0;
@@ -72,17 +73,15 @@ int main(int argc, char *argv[]) {
         pthread_join(tid[i], NULL);
     }
 
-    int maxI;
     // gather data from the individual results
     maxVal = data[0].maxRunLength;
-    //maxChar = data[1].maxRunChar;
     for (i=0; i<NUM_THREADS; ++i) {
         if (data[i].maxRunLength > maxVal) {
             maxVal = data[i].maxRunLength;
             maxI = i;
         }
     }
-    maxChar = data[maxI - 1].maxRunChar; //no idea why we have to subtract by 1 to get this to work
+    maxChar = data[maxI].maxRunChar;
 
     printf("Longest run of consecutive digits over the whole array is %d of digit %c\n", maxVal, maxChar);
 
