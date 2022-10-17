@@ -8,20 +8,19 @@
 #include <stdio.h>
 #include <string.h>
 
-#define NUM_CHILDREN 2
-#define NUM_ELEMENTS 1000
-#define BUFLEN 10100
+#define NUM_ELEMENTS 100
+#define BUFLEN 110
 #define LINELEN 256
 char buffer[BUFLEN];
 
 //thread stuff
 #define NUM_THREADS 4
 typedef struct {
-    int startIndex; // start index in buffer[] at which to begin searching
-    int endIndex; // end index
+    int startIndex;   // start index in buffer[] at which to begin searching
+    int endIndex;     // end index
     int maxRunLength; // result: the longest run found of any character in buffer[],
-// between startIndex and endIndex (inclusive)
-    char maxRunChar; // result: the character in the longest run
+                      // between startIndex and endIndex (inclusive)
+    char maxRunChar;  // result: the character in the longest run
 } SearchInfo;
 
 int readFile(char *filename, int *numChars);
@@ -120,37 +119,32 @@ int readFile(char *filename, int *numChars){
 // function over which values to do the max.
 
 void *searchFunction(void *param) {
+    //convert parameter into search info struct
     SearchInfo *data;
-
     data = (SearchInfo *) param;
 
-//    printf("(R) I am runner; will do max run of digitsfor the range %d to %d\n",
-//           data->startIndex, data->endIndex);
+    //initialize variables to keep track of run and max run of characters
+    int maxrun = 0;
+    int run = 1; //run is initialized to 1 because every char will be at least a run of 1
 
-    //here is where we need to find the longest run of digits, going 10 indices
-    //over to ensure there isn't one at the end of one of the thread's alloted blocks
-    //need to pad by 10
-    //TODO need to account for padding of 10, otherwise it should work
-    int* counter = (int *)malloc(sizeof(int)*data->endIndex);
-    // initialize
-    for (int i = 0; i < data->endIndex; ++i) {
-        counter[i] = 0;
-    }
-    int max = 0;
-    for (int i = 0; i < data->endIndex+10; ++i) { //maybe +10 here?
-        ++counter[buffer[i]];
-        if(max < counter[buffer[i]]) {
-            max = counter[buffer[i]];
-            data->maxRunChar = buffer[i];
+    //loop through the portion of the array that we're searching, padding the end index by 10 to ensure
+    // that we catch any runs that are on the edges.
+    for (int i = data->startIndex; i < data->endIndex + 10; ++i) {
+        //while character is equal to next, increment run and i
+        while (buffer[i] == buffer [i + 1] && i < NUM_ELEMENTS){
+            run++;
+            i++;
         }
+        //set max run equal to the run if the current run is greater than max run
+        if (run > maxrun){
+            maxrun = run;
+            data->maxRunChar = buffer[i]; //update the character that the run was of
+        }
+        run = 1; //set run back to 1 because each char has a run of 1 (itself)
     }
-    free(counter);
-    //max is the longest consecutive string of same number
-    data->maxRunLength = max;
-
-    printf("(R) max is %d\n", data->maxRunLength);
-
-    pthread_exit(NULL);
+    data->maxRunLength = maxrun; //update max run length of search info struct
+    printf("(R) max is %d of character %c\n", data->maxRunLength, data->maxRunChar);
+    pthread_exit(NULL); //exit thread
 }
 
 
